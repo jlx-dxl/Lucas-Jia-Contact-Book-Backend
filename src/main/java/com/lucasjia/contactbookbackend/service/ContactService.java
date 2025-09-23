@@ -127,4 +127,23 @@ public class ContactService {
         );
     }
 
+    // 🔹 删除联系人
+    public void deleteContact(Long userId, Long contactId) {
+        // 确认用户存在
+        userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        // 查找联系人
+        Contact contact = contactRepository.findById(contactId)
+                .orElseThrow(() -> new IllegalArgumentException("Contact not found"));
+
+        // 确保联系人属于该用户
+        if (!contact.getUser().getId().equals(userId)) {
+            throw new IllegalArgumentException("Contact does not belong to this user");
+        }
+
+        // 删除联系人
+        contactRepository.delete(contact);
+    }
+
 }

@@ -46,4 +46,15 @@ public class ContactController {
         ContactResponse response = contactService.updateContact(userId, id, request);
         return ResponseEntity.ok(response);
     }
+
+    // 🔹 删除联系人
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteContact(
+            @RequestParam Long userId,
+            @PathVariable Long id) {
+
+        contactService.deleteContact(userId, id);
+        return ResponseEntity.noContent().build(); // 返回 204 No Content
+    }
+
 }
