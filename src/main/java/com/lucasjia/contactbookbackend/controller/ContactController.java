@@ -6,6 +6,7 @@ import com.lucasjia.contactbookbackend.service.ContactService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/contacts")
@@ -25,4 +26,14 @@ public class ContactController {
         ContactResponse response = contactService.createContact(userId, request);
         return ResponseEntity.ok(response);
     }
+
+    // 🔹 查询联系人（支持搜索）
+    @GetMapping
+    public ResponseEntity<List<ContactResponse>> getContacts(
+            @RequestParam Long userId,
+            @RequestParam(required = false) String q) {
+
+        return ResponseEntity.ok(contactService.getContacts(userId, q));
+    }
+
 }

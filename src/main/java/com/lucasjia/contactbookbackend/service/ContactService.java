@@ -7,6 +7,8 @@ import com.lucasjia.contactbookbackend.entity.User;
 import com.lucasjia.contactbookbackend.repository.ContactRepository;
 import com.lucasjia.contactbookbackend.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ContactService {
@@ -52,4 +54,33 @@ public class ContactService {
                 saved.getUpdatedAt()
         );
     }
+
+    // 🔹 获取联系人列表（可搜索）
+    public List<ContactResponse> getContacts(Long userId, String q) {
+        // 确认用户存在
+        userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        List<Contact> contacts;
+
+        if (q == null || q.isBlank()) {
+            contacts = contactRepository.findByUserId(userId);
+        } else {
+            contacts = contactRepository.searchContacts(userId, q);
+        }
+
+
+        // 转换成 Response DTO
+        return contacts.stream()
+                .map(c -> new ContactResponse(
+                        c.getId(),
+                        c.getName(),
+                        c.getEmail(),
+                        c.getPhone(),
+                        c.getCreatedAt(),
+                        c.getUpdatedAt()
+                ))
+                .collect(Collectors.toList());
+    }
+
 }
