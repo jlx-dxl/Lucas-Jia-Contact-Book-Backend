@@ -2,18 +2,13 @@ package com.lucasjia.contactbookbackend.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 
-public class UserRequest {
+public class LoginRequest {
     @NotBlank(message = "Email is required.")
     @Email(message = "Enter a valid email address.")
     private String email;
 
     @NotBlank(message = "Password is required.")
-    @Pattern(
-            regexp = "^(?=.*[0-9])(?=.*[!@#$%^&*]).{8,}$",
-            message = "Password must be at least 8 characters long and contain at least one number and one special character."
-    )
     private String password;
 
     // --- Getters & Setters ---

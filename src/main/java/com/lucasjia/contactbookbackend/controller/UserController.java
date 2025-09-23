@@ -1,9 +1,7 @@
 package com.lucasjia.contactbookbackend.controller;
 
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import com.lucasjia.contactbookbackend.dto.LoginRequest;
+import org.springframework.web.bind.annotation.*;
 import com.lucasjia.contactbookbackend.dto.UserRequest;
 import com.lucasjia.contactbookbackend.dto.UserResponse;
 import com.lucasjia.contactbookbackend.service.UserService;
@@ -27,8 +25,16 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<UserResponse> login(@Valid @RequestBody UserRequest request) {
+    public ResponseEntity<UserResponse> login(@Valid @RequestBody LoginRequest request) {
         UserResponse response = userService.login(request);
         return ResponseEntity.ok(response);
     }
+
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+        userService.deleteUser(id);
+        return ResponseEntity.noContent().build(); // 204 No Content
+    }
+
 }

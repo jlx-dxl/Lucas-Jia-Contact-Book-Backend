@@ -1,9 +1,11 @@
 package com.lucasjia.contactbookbackend.service;
 
+import com.lucasjia.contactbookbackend.dto.LoginRequest;
 import com.lucasjia.contactbookbackend.dto.UserRequest;
 import com.lucasjia.contactbookbackend.dto.UserResponse;
 import com.lucasjia.contactbookbackend.entity.User;
 import com.lucasjia.contactbookbackend.repository.UserRepository;
+import jakarta.validation.Valid;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -33,7 +35,7 @@ public class UserService {
         return new UserResponse(saved.getId(), saved.getEmail(), saved.getCreatedAt());
     }
 
-    public UserResponse login(UserRequest request) {
+    public UserResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
@@ -43,4 +45,14 @@ public class UserService {
 
         return new UserResponse(user.getId(), user.getEmail(), user.getCreatedAt());
     }
+
+
+    // 🔹 注销用户（删除账户）
+    public void deleteUser(Long userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new IllegalArgumentException("User not found");
+        }
+        userRepository.deleteById(userId);
+    }
+
 }

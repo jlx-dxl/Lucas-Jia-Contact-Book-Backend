@@ -32,7 +32,7 @@ public class ContactService {
         }
 
         // 检查 phone 是否重复
-        if (contactRepository.existsByUserIdAndPhone(userId, request.getPhone())) {
+        if (contactRepository.existsByUserIdAndPhone(userId, normalizePhone(request.getPhone()))) {
             throw new IllegalArgumentException("This phone number is already in use");
         }
 
@@ -41,7 +41,7 @@ public class ContactService {
         contact.setUser(user);
         contact.setName(request.getName());
         contact.setEmail(request.getEmail().toLowerCase());
-        contact.setPhone(request.getPhone());
+        contact.setPhone(normalizePhone(request.getPhone())); // ✅ 格式化
 
         Contact saved = contactRepository.save(contact);
 
@@ -66,9 +66,18 @@ public class ContactService {
         if (q == null || q.isBlank()) {
             contacts = contactRepository.findByUserId(userId);
         } else {
-            contacts = contactRepository.searchContacts(userId, q);
-        }
+            // ✅ 对搜索关键字做标准化
+            String normalized = normalizePhone(q);
 
+            // 如果 normalized 和原始输入不同，可以同时查
+            contacts = contactRepository.searchContacts(userId, normalized);
+            if (!normalized.equals(q)) {
+                contacts.addAll(contactRepository.searchContacts(userId, q));
+            }
+
+            // 去重
+            contacts = contacts.stream().distinct().collect(Collectors.toList());
+        }
 
         // 转换成 Response DTO
         return contacts.stream()
@@ -82,6 +91,7 @@ public class ContactService {
                 ))
                 .collect(Collectors.toList());
     }
+
 
     // 🔹 更新联系人
     public ContactResponse updateContact(Long userId, Long contactId, ContactRequest request) {
@@ -106,14 +116,14 @@ public class ContactService {
 
         // 检查 phone 是否重复（排除自己）
         if (!contact.getPhone().equals(request.getPhone()) &&
-                contactRepository.existsByUserIdAndPhone(userId, request.getPhone())) {
+                contactRepository.existsByUserIdAndPhone(userId, normalizePhone(request.getPhone()))) {
             throw new IllegalArgumentException("This phone number is already in use");
         }
 
         // 更新信息
         contact.setName(request.getName());
         contact.setEmail(request.getEmail().toLowerCase());
-        contact.setPhone(request.getPhone());
+        contact.setPhone(normalizePhone(request.getPhone())); // ✅ 格式化
 
         Contact updated = contactRepository.save(contact);
 
@@ -146,4 +156,17 @@ public class ContactService {
         contactRepository.delete(contact);
     }
 
+    private String normalizePhone(String phone) {
+        if (phone == null) return null;
+
+        // 去掉所有空格、连字符、括号
+        String normalized = phone.replaceAll("[\\s\\-()]", "");
+
+        // 如果没有国家码，默认加上 +1（你可以改成项目需要的默认区号）
+        if (!normalized.startsWith("+")) {
+            normalized = "+1" + normalized;
+        }
+
+        return normalized;
+    }
 }
