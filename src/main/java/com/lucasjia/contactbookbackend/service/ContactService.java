@@ -83,4 +83,48 @@ public class ContactService {
                 .collect(Collectors.toList());
     }
 
+    // 🔹 更新联系人
+    public ContactResponse updateContact(Long userId, Long contactId, ContactRequest request) {
+        // 确认用户存在
+        userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        // 查找联系人
+        Contact contact = contactRepository.findById(contactId)
+                .orElseThrow(() -> new IllegalArgumentException("Contact not found"));
+
+        // 确保联系人属于该用户
+        if (!contact.getUser().getId().equals(userId)) {
+            throw new IllegalArgumentException("Contact does not belong to this user");
+        }
+
+        // 检查 email 是否重复（排除自己）
+        if (!contact.getEmail().equalsIgnoreCase(request.getEmail()) &&
+                contactRepository.existsByUserIdAndEmail(userId, request.getEmail())) {
+            throw new IllegalArgumentException("This email is already in use");
+        }
+
+        // 检查 phone 是否重复（排除自己）
+        if (!contact.getPhone().equals(request.getPhone()) &&
+                contactRepository.existsByUserIdAndPhone(userId, request.getPhone())) {
+            throw new IllegalArgumentException("This phone number is already in use");
+        }
+
+        // 更新信息
+        contact.setName(request.getName());
+        contact.setEmail(request.getEmail().toLowerCase());
+        contact.setPhone(request.getPhone());
+
+        Contact updated = contactRepository.save(contact);
+
+        return new ContactResponse(
+                updated.getId(),
+                updated.getName(),
+                updated.getEmail(),
+                updated.getPhone(),
+                updated.getCreatedAt(),
+                updated.getUpdatedAt()
+        );
+    }
+
 }

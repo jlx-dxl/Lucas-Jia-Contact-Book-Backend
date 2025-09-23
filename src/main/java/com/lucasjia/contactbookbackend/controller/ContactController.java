@@ -36,4 +36,14 @@ public class ContactController {
         return ResponseEntity.ok(contactService.getContacts(userId, q));
     }
 
+    // 🔹 更新联系人
+    @PutMapping("/{id}")
+    public ResponseEntity<ContactResponse> updateContact(
+            @RequestParam Long userId,
+            @PathVariable Long id,
+            @Valid @RequestBody ContactRequest request) {
+
+        ContactResponse response = contactService.updateContact(userId, id, request);
+        return ResponseEntity.ok(response);
+    }
 }
